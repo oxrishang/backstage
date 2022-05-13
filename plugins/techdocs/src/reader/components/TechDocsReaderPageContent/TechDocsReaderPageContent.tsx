@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import React, { useState, useCallback } from 'react';
-import { create } from 'jss';
+import React, { useCallback } from 'react';
 
 import { makeStyles, Grid, Portal } from '@material-ui/core';
-import { StylesProvider, jssPreset } from '@material-ui/styles';
 
 import {
+  TechDocsShadowDom,
   useTechDocsAddons,
   TechDocsAddonLocations as locations,
   useTechDocsReaderPage,
@@ -72,42 +71,24 @@ export const TechDocsReaderPageContent = withTechDocsReaderProvider(
     const { withSearch = true, onReady } = props;
     const classes = useStyles();
     const addons = useTechDocsAddons();
+
     const {
       entityMetadata: { value: entityMetadata, loading: entityMetadataLoading },
       entityRef,
       shadowRoot,
       setShadowRoot,
     } = useTechDocsReaderPage();
+
     const dom = useTechDocsReaderDom(entityRef);
 
-    const [jss, setJss] = useState(
-      create({
-        ...jssPreset(),
-        insertionPoint: undefined,
-      }),
-    );
-
-    const ref = useCallback(
-      (shadowHost: HTMLDivElement) => {
-        if (!dom || !shadowHost) return;
-
-        setJss(
-          create({
-            ...jssPreset(),
-            insertionPoint: dom.querySelector('head') || undefined,
-          }),
-        );
-
-        const newShadowRoot =
-          shadowHost.shadowRoot ?? shadowHost.attachShadow({ mode: 'open' });
-        newShadowRoot.innerHTML = '';
-        newShadowRoot.appendChild(dom);
+    const handleAppend = useCallback(
+      (newShadowRoot: ShadowRoot) => {
         setShadowRoot(newShadowRoot);
         if (onReady instanceof Function) {
           onReady();
         }
       },
-      [dom, setShadowRoot, onReady],
+      [setShadowRoot, onReady],
     );
 
     const contentElement = shadowRoot?.querySelector(
@@ -174,9 +155,7 @@ export const TechDocsReaderPageContent = withTechDocsReaderProvider(
             </Grid>
           )}
           <Grid xs={12} item>
-            {/* sheetsManager={new Map()} is needed in order to deduplicate the injection of CSS in the page. */}
-            <StylesProvider jss={jss} sheetsManager={new Map()}>
-              <div ref={ref} data-testid="techdocs-native-shadowroot" />
+            <TechDocsShadowDom element={dom} onAppend={handleAppend}>
               <Portal container={primarySidebarAddonLocation}>
                 {addons.renderComponentsByLocation(locations.PrimarySidebar)}
               </Portal>
@@ -186,7 +165,7 @@ export const TechDocsReaderPageContent = withTechDocsReaderProvider(
               <Portal container={secondarySidebarAddonLocation}>
                 {addons.renderComponentsByLocation(locations.SecondarySidebar)}
               </Portal>
-            </StylesProvider>
+            </TechDocsShadowDom>
           </Grid>
         </Grid>
       </Content>

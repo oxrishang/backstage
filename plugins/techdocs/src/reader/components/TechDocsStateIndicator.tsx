@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import { Progress } from '@backstage/core-components';
 import { CircularProgress, Button, makeStyles } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 
@@ -47,7 +46,7 @@ export const TechDocsStateIndicator = () => {
     buildLog,
   } = useTechDocsReader();
 
-  const ReaderProgress = state === 'CHECKING' ? <Progress /> : null;
+  const ReaderProgress = null;
 
   if (state === 'INITIAL_BUILD') {
     StateAlert = (
