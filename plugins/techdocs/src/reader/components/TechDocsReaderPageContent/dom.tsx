@@ -46,14 +46,6 @@ import {
   copyToClipboard,
 } from '../../transformers';
 
-type TypographyHeadings = Pick<
-  Theme['typography'],
-  'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
->;
-type TypographyHeadingsKeys = keyof TypographyHeadings;
-
-const headings: TypographyHeadingsKeys[] = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-
 /**
  * Hook that encapsulates the behavior of getting raw HTML and applying
  * transforms to it in order to make it function at a basic level in the
@@ -511,31 +503,6 @@ export const useTechDocsReaderDom = (
               .md-typeset {
                 font-size: var(--md-typeset-font-size);
               }
-  
-              ${headings.reduce<string>((style, heading) => {
-                const styles = theme.typography[heading];
-                const { lineHeight, fontFamily, fontWeight, fontSize } = styles;
-                const calculate = (value: typeof fontSize) => {
-                  let factor: number | string = 1;
-                  if (typeof value === 'number') {
-                    // 60% of the size defined because it is too big
-                    factor = (value / 16) * 0.6;
-                  }
-                  if (typeof value === 'string') {
-                    factor = value.replace('rem', '');
-                  }
-                  return `calc(${factor} * var(--md-typeset-font-size))`;
-                };
-                return style.concat(`
-                  .md-typeset ${heading} {
-                    color: var(--md-default-fg-color);
-                    line-height: ${lineHeight};
-                    font-family: ${fontFamily};
-                    font-weight: ${fontWeight};
-                    font-size: ${calculate(fontSize)};
-                  }
-                `);
-              }, '')}
   
               .md-typeset .md-content__button {
                 color: var(--md-default-fg-color);
